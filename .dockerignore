@@ -1,0 +1,25 @@
+# Git files
+.git
+.gitignore
+
+# Documentation
+README.md
+UNRAID_INSTALLATION.md
+UNRAID_TEMPLATE_DOCUMENTATION.md
+
+# License
+LICENSE
+
+# Build artifacts
+.DS_Store
+*.log
+
+# Editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Temporary files
+*~
+.tmp

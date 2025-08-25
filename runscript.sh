@@ -17,9 +17,16 @@ cleanup() {
 # Trap signals for graceful shutdown
 trap cleanup SIGTERM SIGINT
 
+# Function to update health check
+update_health_check() {
+    echo "$(date)" > /tmp/healthcheck
+}
+
 # Function to log with timestamp and formatting
 log() {
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+    # Update health check on every log entry
+    update_health_check
 }
 
 # Function to validate required environment variables
@@ -180,18 +187,39 @@ check_and_update_system() {
         log "🔧 Performing daily system update..."
         local start_time=$(date +%s)
         
-        if apt update >/dev/null 2>&1 && apt upgrade -y >/dev/null 2>&1; then
-            local end_time=$(date +%s)
-            local duration=$((end_time - start_time))
-            local duration_formatted=$(format_duration $duration)
-            
-            echo "$current_date" > "$update_marker"
-            log "✅ System update completed successfully in $duration_formatted"
+        # Check if we're on Alpine (apk) or Debian/Ubuntu (apt)
+        if command -v apk >/dev/null 2>&1; then
+            # Alpine Linux
+            if apk update >/dev/null 2>&1 && apk upgrade >/dev/null 2>&1; then
+                local end_time=$(date +%s)
+                local duration=$((end_time - start_time))
+                local duration_formatted=$(format_duration $duration)
+                
+                echo "$current_date" > "$update_marker"
+                log "✅ System update completed successfully in $duration_formatted"
+            else
+                local end_time=$(date +%s)
+                local duration=$((end_time - start_time))
+                local duration_formatted=$(format_duration $duration)
+                log "❌ System update failed after $duration_formatted"
+            fi
+        elif command -v apt >/dev/null 2>&1; then
+            # Debian/Ubuntu
+            if apt update >/dev/null 2>&1 && apt upgrade -y >/dev/null 2>&1; then
+                local end_time=$(date +%s)
+                local duration=$((end_time - start_time))
+                local duration_formatted=$(format_duration $duration)
+                
+                echo "$current_date" > "$update_marker"
+                log "✅ System update completed successfully in $duration_formatted"
+            else
+                local end_time=$(date +%s)
+                local duration=$((end_time - start_time))
+                local duration_formatted=$(format_duration $duration)
+                log "❌ System update failed after $duration_formatted"
+            fi
         else
-            local end_time=$(date +%s)
-            local duration=$((end_time - start_time))
-            local duration_formatted=$(format_duration $duration)
-            log "❌ System update failed after $duration_formatted"
+            log "⚠️  No supported package manager found (apk/apt), skipping system update"
         fi
     fi
 }

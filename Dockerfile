@@ -9,56 +9,51 @@
 # - Continuous synchronization with configurable intervals
 # - Automatic retry logic for connection failures
 # - Graceful shutdown with signal handling
-# - Daily system updates
 # - Comprehensive logging functionality
 # - Connectivity and permission checks
 # - One-time or continuous sync mode
 #
 # Author: dkuhnke
-# Version: 1.0
+# Version: 2.0
 # =============================================================================
 
-# Base Image: Debian Latest
-# Debian is used as a stable, well-supported base for the container
-FROM debian:latest
+# Base Image: Alpine Linux (Security-optimized, minimal footprint)
+# Alpine Linux provides a much smaller attack surface and fewer CVEs
+FROM alpine:3.19
 
 # =============================================================================
-# SYSTEM SETUP AND UPDATES
+# SYSTEM SETUP AND SECURITY
 # =============================================================================
 
-# Update the system to the latest state
-# This ensures all security updates are installed
-RUN apt-get update && apt-get upgrade -y
+# Create non-root user for security
+RUN addgroup -g 1001 nextcloud && \
+    adduser -D -u 1001 -G nextcloud nextcloud
 
-# =============================================================================
-# LOCALE CONFIGURATION
-# =============================================================================
-
-# Install and configure locale support
-# This prevents Qt warnings and ensures correct character encoding
-RUN apt-get install -y locales
-
-# Configure en_US.UTF-8 locale
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
-    locale-gen && \
-    update-locale LANG=en_US.UTF-8
-
-# Set environment variables for locale
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
+# Update package index and install security updates
+RUN apk update && apk upgrade
 
 # =============================================================================
 # APPLICATION INSTALLATION
 # =============================================================================
 
-# Install required packages:
-# - nextcloud-desktop-cmd: Nextcloud Command-Line Client for synchronization
+# Install required packages from Alpine repositories:
+# - nextcloud-client: Nextcloud Command-Line Client for synchronization
 # - curl: For connectivity tests and HTTP requests
-RUN apt-get install -y nextcloud-desktop-cmd curl
+# - bash: Required for the runscript
+# - ca-certificates: For HTTPS connections
+# - procps: For process monitoring (pgrep command)
+RUN apk add --no-cache \
+    nextcloud-client \
+    curl \
+    bash \
+    ca-certificates \
+    tzdata \
+    procps
 
-# Create synchronization directory
+# Create synchronization directory with proper ownership
 # This is where Nextcloud data will be stored locally
-RUN mkdir /media/nextclouddata
+RUN mkdir -p /media/nextclouddata && \
+    chown nextcloud:nextcloud /media/nextclouddata
 
 # =============================================================================
 # SCRIPT SETUP
@@ -66,7 +61,7 @@ RUN mkdir /media/nextclouddata
 
 # Copy the main script into the container
 # The runscript.sh contains all synchronization logic
-COPY runscript.sh /usr/bin/runscript.sh
+COPY --chown=nextcloud:nextcloud runscript.sh /usr/bin/runscript.sh
 
 # Set execution permissions for the script
 RUN chmod +x /usr/bin/runscript.sh
@@ -113,17 +108,20 @@ ENV NEXTCLOUD_SLEEP=300
 VOLUME ["/media/nextclouddata"]
 
 # Set working directory
-WORKDIR /usr/bin
+WORKDIR /home/nextcloud
 
-# Health check for the container
-# Checks if the sync process is still running and responsive
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost/ || exit 1
+# Switch to non-root user for security
+USER nextcloud
+
+# Health check for the container (file-based health check)
+# Creates a health check that verifies the script is running properly
+HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \
+    CMD test -f /tmp/healthcheck || exit 1
 
 # Labels for container metadata
 LABEL maintainer="dkuhnke" \
-      description="Nextcloud Sync Container with advanced features" \
-      version="1.0" \
+      description="Nextcloud Sync Container with Alpine Linux (Security-optimized)" \
+      version="2.0" \
       org.opencontainers.image.source="https://github.com/dkuhnke/nextcloud-sync" \
       org.opencontainers.image.title="Nextcloud Sync Container" \
       org.opencontainers.image.description="Automated Nextcloud synchronization with retry logic and advanced features"
