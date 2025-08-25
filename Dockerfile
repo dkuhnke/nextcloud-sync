@@ -10,57 +10,60 @@
 # - Automatic retry logic for connection failures
 # - Graceful shutdown with signal handling
 # - Comprehensive logging functionality
-# - Connectivity and permission checks
 # - One-time or continuous sync mode
+# - Security-hardened with minimal dependencies (only nextcloud-client + bash)
+# - Optimized for reduced CVE exposure
 #
 # Author: dkuhnke
-# Version: 2.0
+# Version: 2.4
 # =============================================================================
 
-# Base Image: Alpine Linux (Security-optimized, minimal footprint)
-# Alpine Linux provides a much smaller attack surface and fewer CVEs
-FROM alpine:3.19
+# Base Image: Alpine Linux 3.22.1 (Testing newer version for CVE improvements)
+# Note: Using specific version instead of 'latest' for:
+# - Reproducible builds across environments
+# - Controlled security updates and CVE testing
+# - Production stability and predictable behavior
+# Update manually after testing new Alpine releases
+FROM alpine:3.22.1
 
 # =============================================================================
 # SYSTEM SETUP AND SECURITY
 # =============================================================================
 
-# Create non-root user for security
-RUN addgroup -g 1001 nextcloud && \
+# Install only essential packages - minimal approach
+RUN apk update && \
+    apk upgrade --no-cache && \
+    apk add --no-cache \
+        nextcloud-client=~3.15 \
+        bash && \
+    # Security hardening: Remove package cache and unnecessary files
+    rm -rf /var/cache/apk/* \
+           /tmp/* \
+           /var/tmp/* \
+           /usr/share/man \
+           /usr/share/doc \
+           /usr/share/info \
+           /usr/share/locale \
+           /usr/share/zoneinfo/right \
+           /usr/share/zoneinfo/posix && \
+    # Create non-root user for security
+    addgroup -g 1001 nextcloud && \
     adduser -D -u 1001 -G nextcloud nextcloud
-
-# Update package index and install security updates
-RUN apk update && apk upgrade
-
-# =============================================================================
-# APPLICATION INSTALLATION
-# =============================================================================
-
-# Install required packages from Alpine repositories:
-# - nextcloud-client: Nextcloud Command-Line Client for synchronization
-# - curl: For connectivity tests and HTTP requests
-# - bash: Required for the runscript
-# - ca-certificates: For HTTPS connections
-# - procps: For process monitoring (pgrep command)
-RUN apk add --no-cache \
-    nextcloud-client \
-    curl \
-    bash \
-    ca-certificates \
-    tzdata \
-    procps
 
 # Create synchronization directory with proper ownership
 # This is where Nextcloud data will be stored locally
 RUN mkdir -p /media/nextclouddata && \
-    chown nextcloud:nextcloud /media/nextclouddata
+    chown nextcloud:nextcloud /media/nextclouddata && \
+    # Additional security hardening measures
+    # Remove potentially dangerous setuid/setgid binaries
+    find / -perm /6000 -type f -exec chmod a-s {} \; 2>/dev/null || true
 
 # =============================================================================
 # SCRIPT SETUP
 # =============================================================================
 
-# Copy the main script into the container
-# The runscript.sh contains all synchronization logic
+# Copy the optimized script into the container
+# The runscript.sh contains minimal-dependency synchronization logic
 COPY --chown=nextcloud:nextcloud runscript.sh /usr/bin/runscript.sh
 
 # Set execution permissions for the script
@@ -120,11 +123,11 @@ HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \
 
 # Labels for container metadata
 LABEL maintainer="dkuhnke" \
-      description="Nextcloud Sync Container with Alpine Linux (Security-optimized)" \
-      version="2.0" \
+      description="Minimal Nextcloud Sync Container (nextcloud-client only)" \
+      version="2.4" \
       org.opencontainers.image.source="https://github.com/dkuhnke/nextcloud-sync" \
-      org.opencontainers.image.title="Nextcloud Sync Container" \
-      org.opencontainers.image.description="Automated Nextcloud synchronization with retry logic and advanced features"
+      org.opencontainers.image.title="Nextcloud Sync Container (Minimal)" \
+      org.opencontainers.image.description="Minimal Nextcloud sync with only nextcloud-client dependency"
 
 # =============================================================================
 # CONTAINER START
