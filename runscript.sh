@@ -8,7 +8,6 @@
 # and authentication checks. No external dependencies on curl or procps.
 #
 # Author: dkuhnke
-# Version: 2.4
 # =============================================================================
 
 # Enable strict error handling
@@ -191,7 +190,8 @@ run_single_sync() {
 
 # Main execution function
 main() {
-    log "🚀 Starting Nextcloud Sync Container v2.4 (Minimal Dependencies)"
+    local version="${CONTAINER_VERSION:-unknown}"
+    log "🚀 Starting Nextcloud Sync Container v$version"
     log "   User: $NEXTCLOUD_USER"
     log "   URL: $NEXTCLOUD_URL"
     log "   Retries: $NEXTCLOUD_SYNC_RETRIES"

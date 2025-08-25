@@ -73,6 +73,9 @@ RUN chmod +x /usr/bin/runscript.sh
 # ENVIRONMENT VARIABLES
 # =============================================================================
 
+# Container version (automatically set by build)
+ENV CONTAINER_VERSION=2.4
+
 # Required configuration variables (must be set when starting the container):
 
 # NEXTCLOUD_USER: Nextcloud username
