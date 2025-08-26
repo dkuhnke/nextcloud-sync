@@ -3,23 +3,32 @@
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Platform](https://img.shields.io/badge/Platform-Linux-lightgrey)
-![Alpine](https://img.shields.io/badge/Base-Alpine%203.22.1-0D597F?logo=alpine-linux)
+![Debian](https://img.shields.io/badge/Base-Debian%20Trixie-A81D33?logo=debian)
 ![Security](https://img.shields.io/badge/Security-Hardened-green?logo=security)
+![Version](https://img.shields.io/badge/Version-2.5-brightgreen)
 
-An automated Docker container for continuous synchronization of Nextcloud data with advanced error handling and retry functionality, optimized for minimal CVE exposure.
+A security-optimized Docker container for automated Nextcloud synchronization with enterprise-grade reliability and modern package support. Built on Debian Trixie for enhanced compatibility and latest features.
 
-## 🌟 Features
+## 🌟 Key Features
 
-- **Continuous Synchronization** - Configurable sync intervals for automated data synchronization
-- **Automatic Retry Logic** - Built-in retry mechanism for connection failures with exponential backoff strategy
-- **Graceful Shutdown** - Signal handling for clean container stops
-- **Comprehensive Logging** - Detailed logging with timestamps for monitoring and debugging
-- **Health Checks** - Connectivity and permission validation before sync operations
-- **Flexible Modes** - One-time sync or continuous operation modes
-- **Error Recovery** - Robust error handling with configurable retry attempts
-- **🔒 Security-optimized** - Alpine Linux 3.22.1 base for minimal CVE exposure
-- **📦 Minimal Dependencies** - Only `nextcloud-client` and `bash` for reduced attack surface
-- **🛡️ Non-root Execution** - Container runs as unprivileged user for enhanced security
+### 🔒 Security-First Architecture
+- **Debian Trixie** - Latest stable packages with enhanced security features
+- **Modern Nextcloud Client** - nextcloud-desktop-cmd 3.16.4 for optimal compatibility
+- **Non-root execution** - Container runs as unprivileged user (UID/GID 1001)
+- **Minimal package installation** - Only essential packages (`nextcloud-desktop-cmd`, `ca-certificates`)
+- **Security-hardened** - Removal of setuid/setgid binaries and unnecessary system files
+
+### ⚡ Advanced Synchronization
+- **Continuous synchronization** - Configurable sync intervals for automated data management
+- **Intelligent retry logic** - Exponential backoff strategy for connection failures
+- **Graceful shutdown** - Proper signal handling for clean container stops
+- **Comprehensive logging** - Timestamped logs for monitoring and debugging
+
+### 🛠️ Operational Excellence
+- **Health checks** - Pre-sync connectivity and permission validation
+- **Flexible operation modes** - One-time sync or continuous operation
+- **Robust error recovery** - Configurable retry attempts with smart backoff
+- **Resource optimization** - Minimal memory and CPU footprint
 
 ## 🚀 Quick Start
 
@@ -129,10 +138,11 @@ docker run -d \
 
 ## 🔒 Security Improvements
 
-### Alpine Linux Base
-- **Minimal CVE Exposure**: Alpine Linux 3.22.1 reduces CVEs by ~80-90% compared to Debian
-- **Smaller Attack Surface**: Only essential packages (`nextcloud-client`, `bash`)
-- **Security Hardened**: Removal of setuid/setgid binaries and unnecessary files
+### Debian Trixie Base
+- **Modern Package Support**: Debian Trixie provides access to the latest stable packages
+- **Enhanced Compatibility**: nextcloud-desktop-cmd 3.16.4 vs older 3.7.3 in Debian Bookworm
+- **Security Hardening**: Systematic removal of setuid/setgid binaries and unnecessary files
+- **Minimal Installation**: Only essential packages installed for reduced attack surface
 
 ### Non-root Execution
 The container runs as unprivileged `nextcloud` user (UID/GID 1001):
@@ -186,24 +196,24 @@ services:
 
 ## 🛡️ Security Architecture
 
-### CVE Reduction through Alpine Linux
+### Modern Foundation with Debian Trixie
 
-The migration from Debian to Alpine Linux 3.22.1 brings significant security improvements:
+The migration to Debian Trixie brings significant compatibility and feature improvements:
 
-| Aspect | Debian | Alpine Linux | Improvement |
-|--------|--------|--------------|-------------|
-| **Image Size** | ~124MB | ~5MB | 96% smaller |
-| **CVEs** | 70-100 | 5-15 | 80-90% fewer |
-| **Packages** | 200+ | < 20 | Minimal installation |
-| **Attack Surface** | Large | Minimal | Significantly reduced |
+| Aspect | Debian Bookworm | Debian Trixie | Improvement |
+|--------|-----------------|---------------|-------------|
+| **Nextcloud Client** | 3.7.3 | 3.16.4 | Latest features & fixes |
+| **Package Currency** | Stable | Testing/Latest | More recent security patches |
+| **Compatibility** | Legacy support | Modern features | Enhanced functionality |
+| **Package Selection** | Standard | Curated minimal | Reduced installation footprint |
 
 ### Security Features
 
 - **Non-root Execution**: Container runs as `nextcloud` user (UID 1001)
-- **Minimal Dependencies**: Only `nextcloud-client` and `bash` installed
-- **Security Hardening**: Removal of setuid/setgid binaries
-- **Clean Filesystem**: Removal of unnecessary files and caches
-- **Specific Base Version**: Alpine 3.22.1 for reproducible and secure builds
+- **Minimal Package Set**: Only `nextcloud-desktop-cmd` and `ca-certificates` installed
+- **Security Hardening**: Systematic removal of setuid/setgid binaries
+- **Clean Filesystem**: Removal of documentation, man pages, and cache files
+- **Modern Base**: Debian Trixie for current security patches and compatibility
 
 ### Best Practices
 
@@ -301,10 +311,10 @@ docker run -d nextcloud-sync
 
 ### Build Information
 
-- **Base Image**: Alpine Linux 3.22.1
-- **Version**: 2.4 (Minimal Dependencies)
-- **Security Focus**: Optimized for minimal CVE exposure
-- **Dependencies**: `nextcloud-client` + `bash` only
+- **Base Image**: Debian Trixie
+- **Version**: 2.5 (Modern Compatibility)
+- **Nextcloud Client**: 3.16.4 (latest available)
+- **Dependencies**: `nextcloud-desktop-cmd` + `ca-certificates` only
 
 ## 🤝 Contributing
 
@@ -344,6 +354,7 @@ If you encounter any issues or have questions:
 ---
 
 **Author:** dkuhnke  
-**Version:** 2.4  
+**Version:** 2.5 (Modern Compatibility)  
 **Last Updated:** August 2025  
-**Security:** Alpine Linux 3.22.1 optimized for minimal CVE exposure
+**Base:** Debian Trixie - Latest features with enterprise reliability  
+**GitHub:** [nextcloud-sync](https://github.com/dkuhnke/nextcloud-sync)

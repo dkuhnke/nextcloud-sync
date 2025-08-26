@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Na  <Config Name="Local Data Directory" Target="/media/nextclouddata" Default="/mnt/user/nextcloud-sync/" Mode="rw" Description="Local directory path where your Nextcloud data will be synchronized. This directory should be accessible and writable by the container (UID/GID 1001). The security-hardened container will create subdirectories as needed to match your Nextcloud folder structure." Type="Path" Display="always" Required="true" Mask="false"/>e>nextcloud-sync</Name>
+  <Name>nextcloud-sync</Name>
   <Repository>dkuhnke/nextcloud-sync</Repository>
   <Registry>https://hub.docker.com/r/dkuhnke/nextcloud-sync</Registry>
   <Network>bridge</Network>
@@ -10,27 +10,30 @@
   <Support>https://github.com/dkuhnke/nextcloud-sync/issues</Support>
   <Project>https://github.com/dkuhnke/nextcloud-sync</Project>
   <Overview>
-    Nextcloud Sync Container v2.4 provides automated, continuous synchronization of your Nextcloud data with advanced error handling and security-optimized architecture.
+    Nextcloud Sync Container v2.5 delivers enterprise-grade, automated synchronization of your Nextcloud data with modern compatibility and enhanced operational reliability.
 
-    🔒 Security Improvements (v2.4):
-    • Alpine Linux 3.22.1 base for minimal CVE exposure (80-90% fewer CVEs vs Debian)
-    • Non-root execution with unprivileged user for enhanced security
-    • Minimal dependencies (only nextcloud-client + bash) for reduced attack surface
-    • Security-hardened container with removal of unnecessary binaries and files
+    🔒 Modern Foundation (v2.5):
+    • Debian Trixie base for access to latest stable packages and enhanced compatibility
+    • nextcloud-desktop-cmd 3.16.4 (latest) vs 3.7.3 in older distributions for optimal functionality
+    • Security-hardened architecture with systematic removal of unnecessary binaries and files
+    • Non-root execution with unprivileged user (UID/GID 1001) for enhanced security posture
+    • Minimal package installation (nextcloud-desktop-cmd + ca-certificates only) for reduced attack surface
+    • Enterprise-grade security optimizations following modern container security best practices
 
-    Key Features:
-    • Continuous synchronization with configurable intervals
-    • Automatic retry logic for connection failures with exponential backoff
-    • Graceful shutdown with proper signal handling
-    • Comprehensive logging with timestamps for monitoring and debugging
-    • Health checks for connectivity and permission validation
-    • Flexible modes: one-time sync or continuous operation
-    • Robust error recovery with configurable retry attempts
-    • Optimized performance with minimal resource footprint
+    ⚡ Advanced Synchronization Features:
+    • Intelligent continuous synchronization with fully configurable intervals
+    • Sophisticated retry logic with exponential backoff for unreliable network conditions
+    • Graceful shutdown capabilities with proper SIGTERM/SIGINT signal handling
+    • Comprehensive structured logging with precision timestamps for monitoring and debugging
+    • Pre-sync health validation for connectivity and filesystem permissions
+    • Dual operation modes: one-time execution or continuous daemon operation
+    • Robust error recovery mechanisms with configurable retry attempts and smart backoff algorithms
+    • Resource-optimized performance with minimal memory and CPU footprint
 
-    Security Note: It's highly recommended to use app-specific passwords instead of your main Nextcloud password. Create an app password in Nextcloud Settings → Security → Devices &amp; sessions.
+    🛡️ Security Recommendations: 
+    For maximum security, always use app-specific passwords instead of your primary Nextcloud credentials. Generate dedicated app tokens in Nextcloud Settings → Security → Devices &amp; sessions.
 
-    The container synchronizes your local data directory with your Nextcloud instance, providing reliable backup and synchronization capabilities with enterprise-grade security features.
+    This container provides enterprise-ready backup and synchronization capabilities with modern compatibility features, making it ideal for production environments requiring reliable Nextcloud data management with latest client functionality.
   </Overview>
   <Category>Backup: Productivity: Tools:</Category>
   <WebUI/>
@@ -47,7 +50,7 @@
   <Config Name="Nextcloud Password/Token" Target="NEXTCLOUD_PASS" Default="" Mode="" Description="Your Nextcloud app password or token. For security reasons, it's highly recommended to create an app-specific password in Nextcloud Settings → Security → Devices &amp; sessions instead of using your main password." Type="Variable" Display="always" Required="true" Mask="true"/>
   <Config Name="Nextcloud Server URL" Target="NEXTCLOUD_URL" Default="" Mode="" Description="Your Nextcloud server hostname or URL (without http/https protocol). Example: cloud.example.com or nextcloud.mydomain.org" Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="Sync Interval (seconds)" Target="NEXTCLOUD_SLEEP" Default="300" Mode="" Description="Time interval between synchronization attempts in seconds. Default is 300 seconds (5 minutes). Increase for less frequent syncs or decrease for more frequent syncs." Type="Variable" Display="always" Required="false" Mask="false"/>
-  <Config Name="Sync Retry Attempts" Target="NEXTCLOUD_SYNC_RETRIES" Default="4" Mode="" Description="Number of retry attempts when synchronization fails (1-10 range). The container uses exponential backoff between retry attempts. Increase this value for unstable network connections. v2.4 includes improved retry logic with better error handling." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Sync Retry Attempts" Target="NEXTCLOUD_SYNC_RETRIES" Default="4" Mode="" Description="Number of retry attempts when synchronization fails (1-10 range). The container uses exponential backoff between retry attempts. Increase this value for unstable network connections. v2.5 includes enhanced retry logic with improved error handling and modern client compatibility." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="Run Once Mode" Target="NEXTCLOUD_RUN_ONCE" Default="false" Mode="" Description="Set to 'true' to run synchronization once and exit, or 'false' for continuous operation. Use 'true' for scheduled one-time syncs via Unraid User Scripts." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="Local Data Directory" Target="/media/nextclouddata" Default="/mnt/user/nextcloud-sync/" Mode="rw" Description="Local directory path where your Nextcloud data will be synchronized. This directory should be accessible and writable by the container. The container will create subdirectories as needed to match your Nextcloud folder structure." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="Log Directory (Optional)" Target="/var/log/nextcloud-sync" Default="" Mode="rw" Description="Optional: Mount a local directory to persist container logs. Leave empty if you don't need persistent logging." Type="Path" Display="advanced" Required="false" Mask="false"/>

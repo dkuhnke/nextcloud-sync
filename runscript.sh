@@ -47,6 +47,7 @@ validate_environment() {
     export NEXTCLOUD_SYNC_RETRIES=${NEXTCLOUD_SYNC_RETRIES:-4}
     export NEXTCLOUD_SLEEP=${NEXTCLOUD_SLEEP:-300}
     export NEXTCLOUD_RUN_ONCE=${NEXTCLOUD_RUN_ONCE:-false}
+    export NEXTCLOUD_DEBUG=${NEXTCLOUD_DEBUG:-false}
     
     # Check required variables
     if [ -z "$NEXTCLOUD_USER" ] || [ "$NEXTCLOUD_USER" = "" ]; then
@@ -110,7 +111,55 @@ validate_directory_permissions() {
         exit 1
     fi
     
+    # Check available disk space
+    local available_space=$(df -h "$sync_dir" | awk 'NR==2 {print $4}')
+    log "💾 Available disk space: $available_space"
+    
     log "✅ Directory permissions validated"
+}
+
+# Function to test connectivity before sync
+test_connectivity() {
+    log "🌐 Testing Nextcloud connectivity..."
+    
+    local server_url="$NEXTCLOUD_URL"
+    
+    # Ensure URL has correct format (just hostname/server, no WebDAV path)
+    # Remove any trailing WebDAV paths if present
+    server_url=$(echo "$server_url" | sed 's|/remote\.php/dav/files/.*||' | sed 's|/$||')
+    
+    log "   Testing server: $server_url"
+    
+    # Use nextcloudcmd with --dry-run to test connectivity without actually syncing
+    local test_output="/tmp/nextcloud_test_output.$$"
+    if timeout 60 nextcloudcmd --dry-run --user "$NEXTCLOUD_USER" --password "$NEXTCLOUD_PASS" "/tmp" "$server_url" > "$test_output" 2>&1; then
+        rm -f "$test_output"
+        log "✅ Connectivity test successful"
+        return 0
+    else
+        local exit_code=$?
+        
+        # Show any error output
+        if [ -f "$test_output" ]; then
+            log "   Test output:"
+            while IFS= read -r line; do
+                log "   $line"
+            done < "$test_output"
+            rm -f "$test_output"
+        fi
+        
+        if [ $exit_code -eq 124 ]; then
+            log "❌ Connectivity test timed out after 60s"
+        else
+            log "❌ Connectivity test failed (exit code: $exit_code)"
+        fi
+        log "   This could indicate:"
+        log "   - Wrong credentials"
+        log "   - Network connectivity issues"
+        log "   - Incorrect Nextcloud URL"
+        log "   - Firewall blocking the connection"
+        return 1
+    fi
 }
 
 # Function to perform synchronization with retries
@@ -118,7 +167,11 @@ perform_sync_with_retries() {
     local attempt=1
     local max_attempts=$((NEXTCLOUD_SYNC_RETRIES + 1))
     local sync_dir="/media/nextclouddata"
-    local webdav_url="$NEXTCLOUD_URL"
+    local server_url="$NEXTCLOUD_URL"
+    
+    # Ensure URL has correct format (just hostname/server, no WebDAV path)
+    # Remove any trailing WebDAV paths if present
+    server_url=$(echo "$server_url" | sed 's|/remote\.php/dav/files/.*||' | sed 's|/$||')
     
     while [ $attempt -le $max_attempts ]; do
         if [ "$SHUTDOWN_REQUESTED" = true ]; then
@@ -127,27 +180,78 @@ perform_sync_with_retries() {
         fi
         
         log "🔄 Sync attempt $attempt/$max_attempts"
-        log "   Source: $webdav_url"
+        log "   Server: $server_url"
         log "   Target: $sync_dir"
+        log "   Command: nextcloudcmd --user \"$NEXTCLOUD_USER\" --password \"***\" \"$sync_dir\" \"$server_url\""
         
-        # Perform synchronization using nextcloudcmd
-        # The --silent flag reduces output, but errors will still be shown
-        if nextcloudcmd --silent --user "$NEXTCLOUD_USER" --password "$NEXTCLOUD_PASS" "$sync_dir" "$webdav_url"; then
-            log "✅ Synchronization completed successfully"
-            update_health_check
-            return 0
-        else
-            local exit_code=$?
-            log "❌ Sync attempt $attempt failed (exit code: $exit_code)"
+        # Perform synchronization using nextcloudcmd with timeout for large files
+        log "⏳ Starting sync (with 30-minute timeout for safety)..."
+        
+        # Create a temporary file for output
+        local temp_output="/tmp/nextcloud_sync_output.$$"
+        
+        # Run nextcloudcmd with timeout to prevent hanging
+        if timeout 1800 nextcloudcmd --user "$NEXTCLOUD_USER" --password "$NEXTCLOUD_PASS" "$sync_dir" "$server_url" > "$temp_output" 2>&1; then
+            local sync_exit_code=$?
             
-            if [ $attempt -lt $max_attempts ]; then
-                local wait_time=$((attempt * 30))
-                log "⏳ Waiting $wait_time seconds before retry..."
-                sleep $wait_time
+            # Display the output (conditionally verbose)
+            if [ "$NEXTCLOUD_DEBUG" = "true" ]; then
+                while IFS= read -r line; do
+                    log "   $line"
+                done < "$temp_output"
             else
-                log "❌ All $max_attempts sync attempts failed"
-                return 1
+                # Show only important lines (errors, warnings, summary)
+                while IFS= read -r line; do
+                    if [[ "$line" =~ (error|warning|failed|success|completed|finished|summary) ]] || [[ "$line" =~ ^[[:space:]]*$ ]]; then
+                        log "   $line"
+                    fi
+                done < "$temp_output"
             fi
+            
+            # Clean up temp file
+            rm -f "$temp_output"
+            
+            if [ $sync_exit_code -eq 0 ]; then
+                log "✅ Synchronization completed successfully"
+                update_health_check
+                return 0
+            else
+                log "❌ Sync attempt $attempt failed (exit code: $sync_exit_code)"
+            fi
+        else
+            local sync_exit_code=$?
+            
+            # Display any output before the error
+            if [ -f "$temp_output" ]; then
+                if [ "$NEXTCLOUD_DEBUG" = "true" ]; then
+                    while IFS= read -r line; do
+                        log "   $line"
+                    done < "$temp_output"
+                else
+                    # Show only important lines
+                    while IFS= read -r line; do
+                        if [[ "$line" =~ (error|warning|failed|success|completed|finished|summary) ]] || [[ "$line" =~ ^[[:space:]]*$ ]]; then
+                            log "   $line"
+                        fi
+                    done < "$temp_output"
+                fi
+                rm -f "$temp_output"
+            fi
+            
+            if [ $sync_exit_code -eq 124 ]; then
+                log "❌ Sync attempt $attempt timed out after 30 minutes (likely hung)"
+            else
+                log "❌ Sync attempt $attempt failed (exit code: $sync_exit_code)"
+            fi
+        fi
+        
+        if [ $attempt -lt $max_attempts ]; then
+            local wait_time=$((attempt * 30))
+            log "⏳ Waiting $wait_time seconds before retry..."
+            sleep $wait_time
+        else
+            log "❌ All $max_attempts sync attempts failed"
+            return 1
         fi
         
         attempt=$((attempt + 1))
@@ -200,6 +304,12 @@ main() {
     # Validate environment and setup
     validate_environment
     validate_directory_permissions
+    
+    # Test connectivity before starting sync
+    if ! test_connectivity; then
+        log "❌ Pre-flight connectivity test failed, exiting"
+        exit 1
+    fi
     
     # Initial health check update
     update_health_check

@@ -15,40 +15,34 @@
 # - Optimized for reduced CVE exposure
 #
 # Author: dkuhnke
-# Version: 2.4
+# Version: 2.5
 # =============================================================================
 
-# Base Image: Alpine Linux 3.22.1 (Testing newer version for CVE improvements)
-# Note: Using specific version instead of 'latest' for:
-# - Reproducible builds across environments
-# - Controlled security updates and CVE testing
-# - Production stability and predictable behavior
-# Update manually after testing new Alpine releases
-FROM alpine:3.22.1
+# Base Image
+FROM debian:trixie-slim
 
 # =============================================================================
 # SYSTEM SETUP AND SECURITY
 # =============================================================================
 
 # Install only essential packages - minimal approach
-RUN apk update && \
-    apk upgrade --no-cache && \
-    apk add --no-cache \
-        nextcloud-client=~3.15 \
-        bash && \
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        nextcloud-desktop-cmd \
+        ca-certificates && \
     # Security hardening: Remove package cache and unnecessary files
-    rm -rf /var/cache/apk/* \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* \
            /tmp/* \
            /var/tmp/* \
            /usr/share/man \
            /usr/share/doc \
            /usr/share/info \
-           /usr/share/locale \
-           /usr/share/zoneinfo/right \
-           /usr/share/zoneinfo/posix && \
+           /usr/share/locale && \
     # Create non-root user for security
-    addgroup -g 1001 nextcloud && \
-    adduser -D -u 1001 -G nextcloud nextcloud
+    groupadd -g 1001 nextcloud && \
+    useradd -u 1001 -g nextcloud -m -s /bin/bash nextcloud
 
 # Create synchronization directory with proper ownership
 # This is where Nextcloud data will be stored locally
@@ -74,7 +68,7 @@ RUN chmod +x /usr/bin/runscript.sh
 # =============================================================================
 
 # Container version (automatically set by build)
-ENV CONTAINER_VERSION=2.4
+ENV CONTAINER_VERSION=2.5
 
 # Required configuration variables (must be set when starting the container):
 
@@ -126,11 +120,11 @@ HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \
 
 # Labels for container metadata
 LABEL maintainer="dkuhnke" \
-      description="Minimal Nextcloud Sync Container (nextcloud-client only)" \
-      version="2.4" \
+      description="Nextcloud Sync Container (Debian-based for stability)" \
+      version="2.5" \
       org.opencontainers.image.source="https://github.com/dkuhnke/nextcloud-sync" \
-      org.opencontainers.image.title="Nextcloud Sync Container (Minimal)" \
-      org.opencontainers.image.description="Minimal Nextcloud sync with only nextcloud-client dependency"
+      org.opencontainers.image.title="Nextcloud Sync Container (Debian)" \
+      org.opencontainers.image.description="Stable Nextcloud sync with Debian base for better compatibility"
 
 # =============================================================================
 # CONTAINER START
