@@ -10,9 +10,9 @@
   <Support>https://github.com/dkuhnke/nextcloud-sync/issues</Support>
   <Project>https://github.com/dkuhnke/nextcloud-sync</Project>
   <Overview>
-    Nextcloud Sync Container v2.5 delivers enterprise-grade, automated synchronization of your Nextcloud data with modern compatibility and enhanced operational reliability.
+    Nextcloud Sync Container v2.6 delivers enterprise-grade, automated synchronization of your Nextcloud data with modern compatibility and enhanced operational reliability.
 
-    🔒 Modern Foundation (v2.5):
+    🔒 Modern Foundation (v2.6):
     • Debian Trixie base for access to latest stable packages and enhanced compatibility
     • nextcloud-desktop-cmd 3.16.4 (latest) vs 3.7.3 in older distributions for optimal functionality
     • Security-hardened architecture with systematic removal of unnecessary binaries and files
@@ -50,7 +50,7 @@
   <Config Name="Nextcloud Password/Token" Target="NEXTCLOUD_PASS" Default="" Mode="" Description="Your Nextcloud app password or token. For security reasons, it's highly recommended to create an app-specific password in Nextcloud Settings → Security → Devices &amp; sessions instead of using your main password." Type="Variable" Display="always" Required="true" Mask="true"/>
   <Config Name="Nextcloud Server URL" Target="NEXTCLOUD_URL" Default="" Mode="" Description="Your Nextcloud server hostname or URL (without http/https protocol). Example: cloud.example.com or nextcloud.mydomain.org" Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="Sync Interval (seconds)" Target="NEXTCLOUD_SLEEP" Default="300" Mode="" Description="Time interval between synchronization attempts in seconds. Default is 300 seconds (5 minutes). Increase for less frequent syncs or decrease for more frequent syncs." Type="Variable" Display="always" Required="false" Mask="false"/>
-  <Config Name="Sync Retry Attempts" Target="NEXTCLOUD_SYNC_RETRIES" Default="4" Mode="" Description="Number of retry attempts when synchronization fails (1-10 range). The container uses exponential backoff between retry attempts. Increase this value for unstable network connections. v2.5 includes enhanced retry logic with improved error handling and modern client compatibility." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Sync Retry Attempts" Target="NEXTCLOUD_SYNC_RETRIES" Default="4" Mode="" Description="Number of retry attempts when synchronization fails (1-10 range). The container uses exponential backoff between retry attempts. Increase this value for unstable network connections. v2.6 includes enhanced retry logic with improved error handling and modern client compatibility." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="Run Once Mode" Target="NEXTCLOUD_RUN_ONCE" Default="false" Mode="" Description="Set to 'true' to run synchronization once and exit, or 'false' for continuous operation. Use 'true' for scheduled one-time syncs via Unraid User Scripts." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="Local Data Directory" Target="/media/nextclouddata" Default="/mnt/user/nextcloud-sync/" Mode="rw" Description="Local directory path where your Nextcloud data will be synchronized. This directory should be accessible and writable by the container. The container will create subdirectories as needed to match your Nextcloud folder structure." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="Log Directory (Optional)" Target="/var/log/nextcloud-sync" Default="" Mode="rw" Description="Optional: Mount a local directory to persist container logs. Leave empty if you don't need persistent logging." Type="Path" Display="advanced" Required="false" Mask="false"/>

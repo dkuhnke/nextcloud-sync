@@ -124,16 +124,24 @@ test_connectivity() {
     
     local server_url="$NEXTCLOUD_URL"
     
-    # Ensure URL has correct format (just hostname/server, no WebDAV path)
+    # Format URL correctly - ensure it has https:// and no trailing WebDAV paths
+    if [[ ! "$server_url" =~ ^https?:// ]]; then
+        server_url="https://$server_url"
+    fi
+    
     # Remove any trailing WebDAV paths if present
     server_url=$(echo "$server_url" | sed 's|/remote\.php/dav/files/.*||' | sed 's|/$||')
     
     log "   Testing server: $server_url"
     
-    # Use nextcloudcmd with --dry-run to test connectivity without actually syncing
+    # Create a temporary test directory
+    local test_dir="/tmp/nextcloud_test_$$"
+    mkdir -p "$test_dir"
+    
+    # Use nextcloudcmd with a temporary directory to test connectivity
     local test_output="/tmp/nextcloud_test_output.$$"
-    if timeout 60 nextcloudcmd --dry-run --user "$NEXTCLOUD_USER" --password "$NEXTCLOUD_PASS" "/tmp" "$server_url" > "$test_output" 2>&1; then
-        rm -f "$test_output"
+    if timeout 60 nextcloudcmd --non-interactive --silent --user "$NEXTCLOUD_USER" --password "$NEXTCLOUD_PASS" "$test_dir" "$server_url" > "$test_output" 2>&1; then
+        rm -rf "$test_dir" "$test_output"
         log "✅ Connectivity test successful"
         return 0
     else
@@ -147,6 +155,8 @@ test_connectivity() {
             done < "$test_output"
             rm -f "$test_output"
         fi
+        
+        rm -rf "$test_dir"
         
         if [ $exit_code -eq 124 ]; then
             log "❌ Connectivity test timed out after 60s"
@@ -169,7 +179,11 @@ perform_sync_with_retries() {
     local sync_dir="/media/nextclouddata"
     local server_url="$NEXTCLOUD_URL"
     
-    # Ensure URL has correct format (just hostname/server, no WebDAV path)
+    # Format URL correctly - ensure it has https:// and no trailing WebDAV paths
+    if [[ ! "$server_url" =~ ^https?:// ]]; then
+        server_url="https://$server_url"
+    fi
+    
     # Remove any trailing WebDAV paths if present
     server_url=$(echo "$server_url" | sed 's|/remote\.php/dav/files/.*||' | sed 's|/$||')
     
@@ -181,8 +195,7 @@ perform_sync_with_retries() {
         
         log "🔄 Sync attempt $attempt/$max_attempts"
         log "   Server: $server_url"
-        log "   Target: $sync_dir"
-        log "   Command: nextcloudcmd --user \"$NEXTCLOUD_USER\" --password \"***\" \"$sync_dir\" \"$server_url\""
+        log "   Command: nextcloudcmd --non-interactive --user \"$NEXTCLOUD_USER\" --password \"***\" \"$sync_dir\" \"$server_url\""
         
         # Perform synchronization using nextcloudcmd with timeout for large files
         log "⏳ Starting sync (with 30-minute timeout for safety)..."
@@ -191,9 +204,14 @@ perform_sync_with_retries() {
         local temp_output="/tmp/nextcloud_sync_output.$$"
         
         # Run nextcloudcmd with timeout to prevent hanging
-        if timeout 1800 nextcloudcmd --user "$NEXTCLOUD_USER" --password "$NEXTCLOUD_PASS" "$sync_dir" "$server_url" > "$temp_output" 2>&1; then
-            local sync_exit_code=$?
-            
+        local nextcloud_cmd="nextcloudcmd --non-interactive --user \"$NEXTCLOUD_USER\" --password \"$NEXTCLOUD_PASS\" \"$sync_dir\" \"$server_url\""
+        
+        # Add debug flag if debug mode is enabled
+        if [ "$NEXTCLOUD_DEBUG" = "true" ]; then
+            nextcloud_cmd="nextcloudcmd --non-interactive --logdebug --user \"$NEXTCLOUD_USER\" --password \"$NEXTCLOUD_PASS\" \"$sync_dir\" \"$server_url\""
+        fi
+        
+        if timeout 1800 bash -c "$nextcloud_cmd" > "$temp_output" 2>&1; then
             # Display the output (conditionally verbose)
             if [ "$NEXTCLOUD_DEBUG" = "true" ]; then
                 while IFS= read -r line; do
@@ -211,13 +229,9 @@ perform_sync_with_retries() {
             # Clean up temp file
             rm -f "$temp_output"
             
-            if [ $sync_exit_code -eq 0 ]; then
-                log "✅ Synchronization completed successfully"
-                update_health_check
-                return 0
-            else
-                log "❌ Sync attempt $attempt failed (exit code: $sync_exit_code)"
-            fi
+            log "✅ Synchronization completed successfully"
+            update_health_check
+            return 0
         else
             local sync_exit_code=$?
             
@@ -292,10 +306,25 @@ run_single_sync() {
     fi
 }
 
+# Function to get nextcloudcmd version info
+get_nextcloudcmd_version() {
+    local version_info
+    if command -v nextcloudcmd >/dev/null 2>&1; then
+        # Get version without the locale warning by redirecting stderr
+        version_info=$(nextcloudcmd --version 2>/dev/null | head -1 | grep -o "version [0-9][^[:space:]]*" || echo "version unknown")
+        echo "$version_info"
+    else
+        echo "version not found"
+    fi
+}
+
 # Main execution function
 main() {
     local version="${CONTAINER_VERSION:-unknown}"
+    local nextcloud_version=$(get_nextcloudcmd_version)
+    
     log "🚀 Starting Nextcloud Sync Container v$version"
+    log "   nextcloudcmd: $nextcloud_version"
     log "   User: $NEXTCLOUD_USER"
     log "   URL: $NEXTCLOUD_URL"
     log "   Retries: $NEXTCLOUD_SYNC_RETRIES"
@@ -307,8 +336,8 @@ main() {
     
     # Test connectivity before starting sync
     if ! test_connectivity; then
-        log "❌ Pre-flight connectivity test failed, exiting"
-        exit 1
+        log "⚠️ Pre-flight connectivity test failed, but attempting sync anyway"
+        log "   (Some servers may not respond to the test but work for actual sync)"
     fi
     
     # Initial health check update
