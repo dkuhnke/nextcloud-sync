@@ -118,7 +118,7 @@ perform_sync_with_retries() {
     local attempt=1
     local max_attempts=$((NEXTCLOUD_SYNC_RETRIES + 1))
     local sync_dir="/media/nextclouddata"
-    local webdav_url="https://$NEXTCLOUD_URL/remote.php/dav/files/$NEXTCLOUD_USER/"
+    local webdav_url="$NEXTCLOUD_URL"
     
     while [ $attempt -le $max_attempts ]; do
         if [ "$SHUTDOWN_REQUESTED" = true ]; then
