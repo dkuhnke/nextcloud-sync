@@ -5,7 +5,7 @@
 ![Platform](https://img.shields.io/badge/Platform-Linux-lightgrey)
 ![Debian](https://img.shields.io/badge/Base-Debian%20Trixie-D70A53?logo=debian)
 ![Security](https://img.shields.io/badge/Security-Hardened-green?logo=security)
-![Version](https://img.shields.io/badge/Version-2.6-brightgreen)
+![Version](https://img.shields.io/badge/Version-2.7-brightgreen)
 
 A security-optimized Docker container for automated Nextcloud synchronization with enterprise-grade reliability and modern package support. Built on Debian Trixie for enhanced compatibility and latest features.
 
@@ -238,7 +238,7 @@ docker logs --tail 100 nextcloud-sync
 Der Container bietet strukturierte Protokollierung mit Zeitstempeln:
 
 ```
-[2025-08-25 10:30:00] 🚀 Starting Nextcloud Sync Container v2.6
+[2025-08-25 10:30:00] 🚀 Starting Nextcloud Sync Container v2.7
 [2025-08-25 10:30:00]    User: john.doe
 [2025-08-25 10:30:00]    URL: cloud.example.com
 [2025-08-25 10:30:00]    Retries: 4
@@ -310,7 +310,7 @@ docker run -d nextcloud-sync
 ### Build Information
 
 - **Base Image**: Debian Trixie
-- **Version**: 2.6
+- **Version**: 2.7
 - **Nextcloud Client**: 3.16.4 (latest available)
 - **Dependencies**: `nextcloud-desktop-cmd` + `ca-certificates` only
 
@@ -352,7 +352,7 @@ If you encounter any issues or have questions:
 ---
 
 **Author:** dkuhnke  
-**Version:** 2.6
+**Version:** 2.7
 **Last Updated:** August 2025  
 **Base:** Debian Trixie - Latest features with enterprise reliability  
 **GitHub:** [nextcloud-sync](https://github.com/dkuhnke/nextcloud-sync)

@@ -15,7 +15,7 @@
 # - Optimized for reduced CVE exposure
 #
 # Author: dkuhnke
-# Version: 2.6
+# Version: 2.7
 # =============================================================================
 
 # Base Image
@@ -68,7 +68,7 @@ RUN chmod +x /usr/bin/runscript.sh
 # =============================================================================
 
 # Container version (automatically set by build)
-ENV CONTAINER_VERSION=2.6
+ENV CONTAINER_VERSION=2.7
 
 # Set proper locale to avoid Qt warnings
 ENV LC_ALL=C.UTF-8
@@ -125,7 +125,7 @@ HEALTHCHECK --interval=60s --timeout=10s --start-period=120s --retries=3 \
 # Labels for container metadata
 LABEL maintainer="dkuhnke" \
       description="Nextcloud Sync Container (Debian-based for stability)" \
-      version="2.6" \
+      version="2.7" \
       org.opencontainers.image.source="https://github.com/dkuhnke/nextcloud-sync" \
       org.opencontainers.image.title="Nextcloud Sync Container (Debian)" \
       org.opencontainers.image.description="Stable Nextcloud sync with Debian base for better compatibility"

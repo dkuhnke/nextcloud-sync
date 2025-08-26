@@ -218,9 +218,17 @@ perform_sync_with_retries() {
                     log "   $line"
                 done < "$temp_output"
             else
-                # Show only important lines (errors, warnings, summary)
+                # Show only important lines (errors, failures, summary) - filter out routine warnings
                 while IFS= read -r line; do
-                    if [[ "$line" =~ (error|warning|failed|success|completed|finished|summary) ]] || [[ "$line" =~ ^[[:space:]]*$ ]]; then
+                    # Skip routine warnings that are not actual problems
+                    if [[ "$line" =~ "Default update channel is \"daily\"" ]] || \
+                       [[ "$line" =~ "Authenticated successful on websocket" ]] || \
+                       [[ "$line" =~ "Could not complete propagation of \"\._" ]] || \
+                       [[ "$line" =~ "File is listed on the ignore list" ]]; then
+                        continue
+                    fi
+                    # Show actual errors, failures, and summary information
+                    if [[ "$line" =~ (error|failed|success|completed|finished|summary) ]] || [[ "$line" =~ ^[[:space:]]*$ ]]; then
                         log "   $line"
                     fi
                 done < "$temp_output"
@@ -242,9 +250,17 @@ perform_sync_with_retries() {
                         log "   $line"
                     done < "$temp_output"
                 else
-                    # Show only important lines
+                    # Show only important lines - filter out routine warnings
                     while IFS= read -r line; do
-                        if [[ "$line" =~ (error|warning|failed|success|completed|finished|summary) ]] || [[ "$line" =~ ^[[:space:]]*$ ]]; then
+                        # Skip routine warnings that are not actual problems
+                        if [[ "$line" =~ "Default update channel is \"daily\"" ]] || \
+                           [[ "$line" =~ "Authenticated successful on websocket" ]] || \
+                           [[ "$line" =~ "Could not complete propagation of \"\._" ]] || \
+                           [[ "$line" =~ "File is listed on the ignore list" ]]; then
+                            continue
+                        fi
+                        # Show actual errors, failures, and summary information
+                        if [[ "$line" =~ (error|failed|success|completed|finished|summary) ]] || [[ "$line" =~ ^[[:space:]]*$ ]]; then
                             log "   $line"
                         fi
                     done < "$temp_output"
