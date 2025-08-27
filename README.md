@@ -326,10 +326,6 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 4. Test thoroughly
 5. Submit a pull request
 
-### Security Guidelines
-
-If you find security vulnerabilities, please read [SECURITY_IMPROVEMENTS.md](SECURITY_IMPROVEMENTS.md) for details on security improvements and report issues responsibly.
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -339,15 +335,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 If you encounter any issues or have questions:
 
 1. Check the [troubleshooting section](#-troubleshooting)
-2. Review the [security improvements](SECURITY_IMPROVEMENTS.md)
-3. Review existing [issues](https://github.com/dkuhnke/nextcloud-sync/issues)
-4. Create a new issue with detailed information
+2. Review existing [issues](https://github.com/dkuhnke/nextcloud-sync/issues)
+3. Create a new issue with detailed information
 
 ## 🔗 Related Projects
 
 - [Nextcloud Desktop Client](https://github.com/nextcloud/desktop)
 - [Nextcloud Docker](https://github.com/nextcloud/docker)
-- [Alpine Linux Security](https://alpinelinux.org/about/)
 
 ---
 
