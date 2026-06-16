@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<Containers>
+  <profile>
+    <Author>dkuhnke</Author>
+    <Overview>Docker containers for Unraid by dkuhnke. Currently featuring nextcloud-sync: automatically sync a local Unraid folder with your Nextcloud instance using the official nextcloudcmd client.</Overview>
+    <Icon>https://raw.githubusercontent.com/dkuhnke/nextcloud-sync/main/icon.png</Icon>
+    <Support>https://github.com/dkuhnke/nextcloud-sync/issues</Support>
+    <GithubURL>https://github.com/dkuhnke/nextcloud-sync</GithubURL>
+  </profile>
+</Containers>
