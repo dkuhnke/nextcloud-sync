@@ -1,0 +1,71 @@
+name: Build and Push Docker Image
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    name: Build${{ github.event_name != 'pull_request' && ' and Push' || '' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from Dockerfile
+        id: version
+        run: |
+          VERSION=$(grep -oP '(?<=\bversion=")[^"]+' Dockerfile | head -1)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+          tags: |
+            # tag push: use the git tag (e.g. v2.8 → 2.8) and also latest
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            # main branch push: use 'latest'
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            # PR: use pr-<number> (no push)
+            type=ref,event=pr
+
+      - name: Set up QEMU (for multi-platform builds)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build${{ github.event_name != 'pull_request' && ' and push' || '' }} image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            CONTAINER_VERSION=${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
