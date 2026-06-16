@@ -294,6 +294,20 @@ For large datasets, sync intervals can be adjusted:
 -e NEXTCLOUD_SLEEP=1800  # 30 minutes
 ```
 
+## 🚢 Container Registry
+
+The Docker image is automatically built and published to the **GitHub Container Registry (GHCR)** via GitHub Actions:
+
+- **Push to `main`** → image published as `ghcr.io/dkuhnke/nextcloud-sync:latest`
+- **Version tag `v*`** → image published with SemVer tags (e.g. `2.8`, `2.8.0`)
+- **Pull Requests** → image is built only (not published)
+
+Pull the latest image:
+
+```bash
+docker pull ghcr.io/dkuhnke/nextcloud-sync:latest
+```
+
 ## 🏗️ Building from Source
 
 ```bash

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <Container version="2">
   <Name>nextcloud-sync</Name>
-  <Repository>dkuhnke/nextcloud-sync</Repository>
-  <Registry>https://hub.docker.com/r/dkuhnke/nextcloud-sync</Registry>
+  <Repository>ghcr.io/dkuhnke/nextcloud-sync</Repository>
+  <Registry>https://ghcr.io/dkuhnke/nextcloud-sync</Registry>
   <Network>bridge</Network>
   <MyIP/>
   <Shell>bash</Shell>
