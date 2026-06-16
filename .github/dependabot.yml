@@ -1,0 +1,10 @@
+version: 2
+updates:
+  # Keep Docker base image up to date
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    labels:
+      - "dependencies"

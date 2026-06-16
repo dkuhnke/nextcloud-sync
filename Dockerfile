@@ -21,6 +21,9 @@
 # Base Image
 FROM debian:trixie-slim
 
+# Build argument for version (injected by CI; falls back to the value in ENV below)
+ARG CONTAINER_VERSION
+
 # =============================================================================
 # SYSTEM SETUP AND SECURITY
 # =============================================================================
@@ -67,8 +70,8 @@ RUN chmod +x /usr/bin/runscript.sh
 # ENVIRONMENT VARIABLES
 # =============================================================================
 
-# Container version (automatically set by build)
-ENV CONTAINER_VERSION=2.7
+# Container version (set via ARG from CI, or falls back to the default here)
+ENV CONTAINER_VERSION=${CONTAINER_VERSION:-2.7}
 
 # Set proper locale to avoid Qt warnings
 ENV LC_ALL=C.UTF-8

@@ -82,7 +82,7 @@ validate_environment() {
         done
         log ""
         log "   Example:"
-        log "   docker run -e NEXTCLOUD_USER=myuser -e NEXTCLOUD_PASS=mypass -e NEXTCLOUD_URL=cloud.example.com dkuhnke/nextcloud-sync"
+        log "   docker run -e NEXTCLOUD_USER=myuser -e NEXTCLOUD_PASS=mypass -e NEXTCLOUD_URL=cloud.example.com ghcr.io/dkuhnke/nextcloud-sync"
         exit 1
     fi
     
