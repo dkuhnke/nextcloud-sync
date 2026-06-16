@@ -18,9 +18,9 @@ echo "Building version: ${VERSION}"
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
   --build-arg CONTAINER_VERSION="${VERSION}" \
-  -t "dkuhnke/nextcloud-sync:${VERSION}" \
-  -t "dkuhnke/nextcloud-sync:latest" \
+  -t "ghcr.io/dkuhnke/nextcloud-sync:${VERSION}" \
+  -t "ghcr.io/dkuhnke/nextcloud-sync:latest" \
   --push \
   .
 
-# docker buildx imagetools inspect dkuhnke/nextcloud-sync:latest
+# docker buildx imagetools inspect ghcr.io/dkuhnke/nextcloud-sync:latest
