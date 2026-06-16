@@ -41,7 +41,7 @@ docker run -d \
   -e NEXTCLOUD_PASS="your_password" \
   -e NEXTCLOUD_URL="your-nextcloud.example.com" \
   -v /path/to/local/data:/media/nextclouddata \
-  dkuhnke/nextcloud-sync
+  ghcr.io/dkuhnke/nextcloud-sync
 ```
 
 ### Docker Compose
@@ -51,7 +51,7 @@ version: '3.8'
 
 services:
   nextcloud-sync:
-    image: dkuhnke/nextcloud-sync
+    image: ghcr.io/dkuhnke/nextcloud-sync
     container_name: nextcloud-sync
     restart: unless-stopped
     environment:
@@ -87,6 +87,7 @@ services:
 | `NEXTCLOUD_SLEEP` | Sleep interval between syncs (seconds) | `300` | `600` |
 | `NEXTCLOUD_SYNC_RETRIES` | Number of retry attempts on failure | `4` | `10` |
 | `NEXTCLOUD_RUN_ONCE` | Run sync once and exit | `false` | `true` |
+| `NEXTCLOUD_DEBUG` | Enable verbose debug logging | `false` | `true` |
 
 ## 📁 Volume Mapping
 
@@ -111,7 +112,7 @@ docker run --rm \
   -e NEXTCLOUD_URL="your-nextcloud.example.com" \
   -e NEXTCLOUD_RUN_ONCE=true \
   -v /path/to/local/data:/media/nextclouddata \
-  dkuhnke/nextcloud-sync
+  ghcr.io/dkuhnke/nextcloud-sync
 ```
 
 ### Custom Sync Interval
@@ -122,7 +123,7 @@ Set a custom sync interval (e.g., every 10 minutes):
 docker run -d \
   -e NEXTCLOUD_SLEEP=600 \
   # ... other environment variables
-  dkuhnke/nextcloud-sync
+  ghcr.io/dkuhnke/nextcloud-sync
 ```
 
 ### Increased Retry Attempts
@@ -133,7 +134,7 @@ For unstable connections, increase retry attempts:
 docker run -d \
   -e NEXTCLOUD_SYNC_RETRIES=10 \
   # ... other environment variables
-  dkuhnke/nextcloud-sync
+  ghcr.io/dkuhnke/nextcloud-sync
 ```
 
 ## 🔒 Security Improvements
@@ -167,7 +168,7 @@ Store sensitive information securely:
 
 ```bash
 # Using environment file
-docker run --env-file .env dkuhnke/nextcloud-sync
+docker run --env-file .env ghcr.io/dkuhnke/nextcloud-sync
 ```
 
 ### Docker Secrets (Recommended for Production)
@@ -185,7 +186,7 @@ secrets:
 
 services:
   nextcloud-sync:
-    image: dkuhnke/nextcloud-sync
+    image: ghcr.io/dkuhnke/nextcloud-sync
     secrets:
       - nextcloud_user
       - nextcloud_pass
@@ -347,6 +348,6 @@ If you encounter any issues or have questions:
 
 **Author:** dkuhnke  
 **Version:** 2.7
-**Last Updated:** August 2025  
+**Last Updated:** June 2026  
 **Base:** Debian Trixie - Latest features with enterprise reliability  
 **GitHub:** [nextcloud-sync](https://github.com/dkuhnke/nextcloud-sync)
