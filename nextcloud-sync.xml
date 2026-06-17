@@ -21,7 +21,7 @@
 
     Recommended: use a Nextcloud app password/token instead of your main account password.
   </Overview>
-  <Category>Backup:Cloud:Productivity:Tools:</Category>
+  <Category>Backup: Cloud: Productivity: Tools:</Category>
   <WebUI/>
   <TemplateURL>https://raw.githubusercontent.com/dkuhnke/nextcloud-sync/main/nextcloud-sync.xml</TemplateURL>
   <Icon>https://raw.githubusercontent.com/dkuhnke/nextcloud-sync/main/icon.png</Icon>
